@@ -28,9 +28,10 @@ function Gauge()
       transitionDuration = 0,
       
       angle = 270,
+      angleRad = angle*Math.PI/180,
       rotate = ((360-angle)/2)-180,
       rangeAngle = 270,
-      rotateRange =((360-rangeAngle)/2)-180,
+      rotateRange = ((360-rangeAngle)/2)-180,
       
       yellowZones = [{ "from": min + range*0.75, "to": min + range*0.9 }],
 			redZones = [{ "from": min + range*0.9, "to": max }],
@@ -66,12 +67,31 @@ function Gauge()
             .attr("transform", function() { return "translate(" + cx + ", " + cy + ") rotate("+rotateRange+")" });
     }
     
-    valueToPoint = function(value, factor)
+    /* Convert angle and distance from center to x,y coordinates 
+     * 
+     * angle in radians relative to axis
+     * distance in px from center
+     * */
+    convertPolarAxis = function(angle, distace)
     {
-      return {"x": cx - radius * factor * Math.cos(scales(value)),
-            "y": cy - radius * factor * Math.sin(scales(value))};
+      
+      var rotateRads = (rotateRange*2)*Math.PI/360;
+      
+      return {"x": cx + distace * Math.sin(angle+rotateRads),
+            "y": cy - distace * Math.cos(angle+rotateRads)};
     }
-    
+    /* Convert angle and distance from center to x,y coordinates 
+     * 
+     * angle in radians relative to outer circle
+     * distance in px from center
+     * */
+    convertPolar = function(angle, distace)
+    {
+      var rotateRads = (rotate)*Math.PI/180;
+      
+      return {"x": cx + distace * Math.sin(angle+rotateRads),
+            "y": cy - distace * Math.cos(angle+rotateRads)};
+    }
     
     
 /***draw outer circle**************************************************/
@@ -94,7 +114,7 @@ function Gauge()
       else body.attr("height", size/2 + radius*Math.cos(radianHalfAngle)+(radius-innerRadius1));
 
       
-/*****The Circle********************************************************/          
+/*****Outer Circle*****************************************************/          
       body.append("svg:path")
           .style("fill", "#ccc")
           .attr("d", d3.svg.arc()
@@ -122,9 +142,22 @@ function Gauge()
                     .innerRadius(innerRadius1)
                     .outerRadius(innerRadius2))
           .attr("transform", function() { return "translate(" + cx + ", " + cy + ") rotate("+rotate+")" });
+         
+      /*body.append("svg:circle")
+							.attr("cx", convertPolarAxis((0),radius).x)
+							.attr("cy", convertPolarAxis((0),radius).y)
+							.attr("r", 0.12 * radius)
+							.style("fill", "black")
+							.style("stroke", "#666")
+							.style("opacity", 1);*/
       
-          
-      
+      /*body.append("svg:circle")
+							.attr("cx", convertPolar(angle,innerRadius1).x)
+							.attr("cy", convertPolar(angle,innerRadius1).y)
+							.attr("r", 0.1 * radius)
+							.style("fill", "green")
+							.style("stroke", "#666")
+							.style("opacity", 1);*/
       
 /*****Draw color zones*************************************************/    
   
@@ -151,9 +184,9 @@ function Gauge()
       ty1 = cy / 2 + fontSize*0.4;
       ty2 = cy / 2 + fontSize*1.2;
       
-      if(angle>250){
+      if(angle>249){
         ty1 = cy / 2 + fontSize*1.1;
-        ty2 = cy / 2 + fontSize*3.33;
+        ty2 = cy / 2 + fontSize*3.7;
       }
       
       body.append("svg:text")
@@ -182,44 +215,27 @@ function Gauge()
       majorTick = scales.ticks(4);
       minorTick = scales.ticks(majorTick.length*5);
       
-      majorTickArc = d3.svg.arc()
-            .innerRadius(innerRadius1*0.88)
-            .outerRadius(innerRadius1*0.98)
-            .startAngle(function(d) {
-                    return scales(d);
-            }) 
-            .endAngle(function(d) {
-                    return scales(d);
-            });
-      minorTickArc = d3.svg.arc()
-          .innerRadius(innerRadius1*0.92)
-          .outerRadius(innerRadius1*0.98)
-          .startAngle(function(d) {
-                  return scales(d);
-          }) 
-          .endAngle(function(d) {
-                  return scales(d);
-          });
+      body.selectAll(".minorTick")
+          .data(minorTick).enter().append("svg:line")
+          .attr("x1",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.92).x;}) 
+          .attr("y1",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.92).y;}) 
+          .attr("x2",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.98).x;}) 
+          .attr("y2",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.98).y;}) 
+          .attr("class", "minorTick")
+          .attr("stroke", "black")
+          .attr("stroke-width", 1);
       
-      body.append("svg:g").attr("transform", "translate(" + cx + "," + cy + ") rotate("+rotateRange+")")
-          .selectAll(".minorTick")
-          .data(minorTick).enter().append("svg:path")
-          .attr("d",function(d) {return minorTickArc(d);})
+      body.selectAll(".majorTick")
+          .data(majorTick).enter().append("svg:line")
+          .attr("x1",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.88).x;}) 
+          .attr("y1",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.88).y;}) 
+          .attr("x2",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.98).x;}) 
+          .attr("y2",function(d) {return convertPolarAxis(scales(d),innerRadius1*0.98).y;}) 
           .attr("class", "majorTick")
           .attr("stroke", "black")
-          .attr("stroke-width", 1)
-          .attr("fill", "none");
-      
-      body.append("svg:g").attr("transform", "translate(" + cx + "," + cy + ") rotate("+rotateRange+")")
-          .selectAll(".majorTick")
-          .data(majorTick).enter().append("svg:path")
-          .attr("d",function(d) {return majorTickArc(d);})
-          .attr("class", "majorTick")
-          .attr("stroke", "black")
-          .attr("stroke-width", 2)
-          .attr("fill", "none");
-      
-      
+          .attr("stroke-width", 2);
+
+     
       var axLabelradius = innerRadius1*0.60;
       
       var axLabel = body.append("g")
@@ -241,28 +257,21 @@ function Gauge()
       
       
 /**********************************************************************/
-      buildPointerPath = function(value)
+    buildPointerPath = function(value)
       {
         var delta = range / 13;
         
-        var head = valueToPoint2(value, 0.85);
-        var head1 = valueToPoint2(value - delta, 0.12);
-        var head2 = valueToPoint2(value + delta, 0.12);
+        var head = convertPolarAxis(scales(value), 0.85*radius);
+        var head1 = convertPolarAxis(scales(value - delta), 0.12*radius);
+        var head2 = convertPolarAxis(scales(value + delta), 0.12*radius);
         
         var tailValue = value - (range * (1/(270/360)) / 2);
-        var tail = valueToPoint2(tailValue, 0.28);
-        var tail1 = valueToPoint2(tailValue - delta, 0.12);
-        var tail2 = valueToPoint2(tailValue + delta, 0.12);
+        var tail = convertPolarAxis(scales(value), 0.28*radius);
+        var tail1 = convertPolarAxis(scales(value - delta), 0.12*radius);
+        var tail2 = convertPolarAxis(scales(value + delta), 0.12*radius);
         
         return [head, head1, tail2, tail, tail1, head2, head];
         
-        function valueToPoint2(value, factor)
-        {
-          var point = valueToPoint(value, factor);
-          point.x -= cx;
-          point.y -= cy;
-          return point;
-        }
       }
       
       var pointerContainer = body.append("svg:g").attr("class", "pointerContainer");
@@ -285,7 +294,19 @@ function Gauge()
                     .style("stroke", "#c63310")
                     .style("fill-opacity", 0.7)
 
-
+    var fontSize = Math.round(size / 10);
+		
+    if(angle > 249)
+    body.append("svg:text")
+									.attr("class","value")
+                  .attr("x", cx)
+									.attr("y", cy + 2.2*fontSize)
+									.attr("dy", fontSize / 2)
+									.attr("text-anchor", "middle")
+									.style("font-size", fontSize + "px")
+									.style("fill", "#000")
+									.style("stroke-width", "0px")
+                  .text(midValue);
 
 /*****The Center*******************************************************/  
     
@@ -304,27 +325,28 @@ function Gauge()
       
       //TO-DO angle<180
       if(angle>180){
+
         body.append("svg:rect")
-            .attr("y", cy+(innerRadius2)*Math.cos(radianHalfAngle)-((innerRadius2-innerRadius1)*Math.cos(radianHalfAngle)))
-            .attr("x", cx-(radius)*Math.sin(radianHalfAngle))
-            .attr("width", 2*(radius)*Math.sin(radianHalfAngle))
-            .attr("height", (innerRadius2-innerRadius1)*Math.cos(radianHalfAngle))
+            .attr("y", convertPolar(0,innerRadius2).y-(innerRadius2-innerRadius1))
+            .attr("x", convertPolar(0,innerRadius2).x)
+            .attr("width", convertPolar(angleRad,innerRadius2).x-convertPolar(0,innerRadius2).x)
+            .attr("height", (innerRadius2-innerRadius1))
             .style("fill", "#e0e0e0");
-            
+
         body.append("svg:rect")
-            .attr("y", cy+radius*Math.cos(radianHalfAngle)-((radius-innerRadius2)*Math.cos(radianHalfAngle)))
-            .attr("x", cx-radius*Math.sin(radianHalfAngle))
-            .attr("width", 2*radius*Math.sin(radianHalfAngle))
+            .attr("y", convertPolar(0,radius).y-(radius-innerRadius2)*Math.cos(radianHalfAngle))
+            .attr("x", convertPolar(0,radius).x)
+            .attr("width", convertPolar(angleRad,radius).x-convertPolar(0,radius).x)
             .attr("height", (radius-innerRadius2)*Math.cos(radianHalfAngle))
             .style("fill", "#ccc");
             
         body.append("svg:line")
             .style("stroke-width", "0.5px")
             .style("stroke", "#000")
-            .attr("y1", cy+radius*Math.cos(radianHalfAngle))
-            .attr("x1", cx-radius*Math.sin(radianHalfAngle))
-            .attr("y2", cy+radius*Math.cos(radianHalfAngle))
-            .attr("x2", cx-radius*Math.sin(radianHalfAngle)+2*(radius)*Math.sin(radianHalfAngle)); 
+            .attr("y1", convertPolar(0,radius).y)
+            .attr("x1", convertPolar(0,radius).x)
+            .attr("y2", convertPolar(angleRad,radius).y)
+            .attr("x2", convertPolar(angleRad,radius).x); 
       }
       if(angle==180){
         
@@ -348,7 +370,7 @@ function Gauge()
             .attr("y1", cy+radius*Math.cos(radianHalfAngle)+(radius-innerRadius2)-0.2)
             .attr("x1", cx-radius*Math.sin(radianHalfAngle))
             .attr("y2", cy+radius*Math.cos(radianHalfAngle)+(radius-innerRadius2)-0.2)
-            .attr("x2", cx-radius*Math.sin(radianHalfAngle)+2*(radius)*Math.sin(radianHalfAngle)); 
+            .attr("x2", cx-radius*Math.sin(radianHalfAngle)+2*(radius)*Math.sin(radianHalfAngle));
         
         body.append("svg:line")
             .style("stroke-width", "0.5px")
@@ -400,6 +422,7 @@ function Gauge()
     if (value > 360 ) value = 360;
     if (value < rangeAngle) my.rangeAngle(value);
     angle = value;
+    angleRad = angle*Math.PI/180;
     rotate = ((360-angle)/2)-180;
     return my;
   };
