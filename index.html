@@ -7,10 +7,23 @@
 		<script type="text/javascript" src="mygauge.js"></script>
 
 		<script>
+			
+			var values=[60,30,90];
+			
 			function init()
 			{			
-				var gauge = Gauge().greenZones([{"from":-10,"to":-1000},{"from":0,"to":10000000}]).angle(230);
-				d3.selectAll("#hodne").call(gauge);
+				var gauge1 = new Gauge();
+				gauge1.angle(270);
+				var gauge2 = new Gauge();
+				gauge2.angle(180);
+				var gauge3 = new Gauge();
+				gauge3.angle(360);
+				
+				
+				d3.selectAll("#hodne").selectAll(".gauge").data([values[0]]).enter()
+				.append("span")
+				.attr("class","gauge")
+				.call(gauge1);
 				
 			}		
 		</script>

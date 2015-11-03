@@ -17,15 +17,10 @@ function Gauge()
       min = 0,
       max =  100,
       range =  max -  min,
-      /*
-      majorTicks = 5,
-      minorTicks = 2,
-      */
+
       greenColor 	= "#109618",
       yellowColor = "#FF9900",
       redColor 	= "#DC3912",
-      
-      transitionDuration = 0,
       
       angle = 270,
       angleRad = angle*Math.PI/180,
@@ -35,7 +30,7 @@ function Gauge()
       
       yellowZones = [{ "from": min + range*0.75, "to": min + range*0.9 }],
 			redZones = [{ "from": min + range*0.9, "to": max }],
-			greenZones = [{ "from": min, "to": min + range*0.75 }],
+			greenZones = [{ "from": 25, "to": 50 }],
       
       updateScales = function (){
         scales = d3.scale.linear().domain([min, max]).range([0.01*(2*Math.PI)*(rangeAngle/360),0.99*(2*Math.PI)*(rangeAngle/360)]);
@@ -48,7 +43,8 @@ function Gauge()
        
 /**********************************************************************/  
   function my(selection) {
-    
+    // generate chart here; `d` is the data and `this` is the element
+    //d3.select(this).text("hello");
     
     
 /***helper functions***************************************************/        
@@ -56,7 +52,6 @@ function Gauge()
     drawBand = function(body,start, end, color)
     {
       if (0 >= end - start) return;
-      //valueToRadians(start)
       body.append("svg:path")
             .style("fill", color)
             .attr("d", d3.svg.arc()
@@ -100,6 +95,8 @@ function Gauge()
         innerRadius2 = 0.91*radius,
         radianHalfAngle = ((360-angle)/360)*Math.PI
     
+    
+    
     selection.each(function(d, i) {
       // generate chart here; `d` is the data and `this` is the element
       //d3.select(this).text("hello");
@@ -142,22 +139,7 @@ function Gauge()
                     .innerRadius(innerRadius1)
                     .outerRadius(innerRadius2))
           .attr("transform", function() { return "translate(" + cx + ", " + cy + ") rotate("+rotate+")" });
-         
-      /*body.append("svg:circle")
-							.attr("cx", convertPolarAxis((0),radius).x)
-							.attr("cy", convertPolarAxis((0),radius).y)
-							.attr("r", 0.12 * radius)
-							.style("fill", "black")
-							.style("stroke", "#666")
-							.style("opacity", 1);*/
-      
-      /*body.append("svg:circle")
-							.attr("cx", convertPolar(angle,innerRadius1).x)
-							.attr("cy", convertPolar(angle,innerRadius1).y)
-							.attr("r", 0.1 * radius)
-							.style("fill", "green")
-							.style("stroke", "#666")
-							.style("opacity", 1);*/
+
       
 /*****Draw color zones*************************************************/    
   
@@ -265,10 +247,10 @@ function Gauge()
         var head1 = convertPolarAxis(scales(value - delta), 0.12*radius);
         var head2 = convertPolarAxis(scales(value + delta), 0.12*radius);
         
-        var tailValue = value - (range * (1/(270/360)) / 2);
-        var tail = convertPolarAxis(scales(value), 0.28*radius);
-        var tail1 = convertPolarAxis(scales(value - delta), 0.12*radius);
-        var tail2 = convertPolarAxis(scales(value + delta), 0.12*radius);
+        var tailValue = scales(value) - Math.PI;
+        var tail = convertPolarAxis((tailValue), 0.28*radius);
+        var tail1 = convertPolarAxis(tailValue - scales(delta), 0.12*radius);
+        var tail2 = convertPolarAxis(tailValue + scales(delta), 0.12*radius);
         
         return [head, head1, tail2, tail, tail1, head2, head];
         
@@ -276,9 +258,9 @@ function Gauge()
       
       var pointerContainer = body.append("svg:g").attr("class", "pointerContainer");
 		
-      var midValue = (min + max) / 2;
+      //var midValue = (min + max) / 2;
       
-      var pointerPath = buildPointerPath(midValue);
+      var pointerPath = buildPointerPath(d);
       
       var pointerLine = d3.svg.line()
                     .x(function(d) { return d.x })
@@ -306,7 +288,7 @@ function Gauge()
 									.style("font-size", fontSize + "px")
 									.style("fill", "#000")
 									.style("stroke-width", "0px")
-                  .text(midValue);
+                  .text(d);
 
 /*****The Center*******************************************************/  
     
