@@ -6,38 +6,38 @@ function Gauge()
 /***configuration + default values*************************************/    
   
 
-  var label = "Gauge",
-      units = "[%]",
+  var label = "Gauge";
+  var units = "[%]";
       
-      size = 150,
-      radius =  size * 0.97 / 2;
-      cx =  size / 2,
-      cy =  size / 2,
+  var size = 150;
+  var radius =  size * 0.97 / 2;
+  var cx =  size / 2;
+  var cy =  size / 2;
       
-      min = 0,
-      max =  100,
-      range =  max -  min,
+  var min = 0;
+  var max =  100;
+  var range =  max -  min;
 
-      greenColor 	= "#109618",
-      yellowColor = "#FF9900",
-      redColor 	= "#DC3912",
+  var greenColor 	= "#109618";
+  var yellowColor = "#FF9900";
+  var redColor 	= "#DC3912";
+
+  var angle = 270;
+  var angleRad = angle*Math.PI/180;
+  var rotate = ((360-angle)/2)-180;
+  var rangeAngle = 270;
+  var rotateRange = ((360-rangeAngle)/2)-180;
       
-      angle = 270,
-      angleRad = angle*Math.PI/180,
-      rotate = ((360-angle)/2)-180,
-      rangeAngle = 270,
-      rotateRange = ((360-rangeAngle)/2)-180,
+  var yellowZones = [{ "from": min + range*0.75, "to": min + range*0.9 }];
+  var redZones = [{ "from": min + range*0.9, "to": max }];
+  var greenZones = [{ "from": 25, "to": 50 }];
       
-      yellowZones = [{ "from": min + range*0.75, "to": min + range*0.9 }],
-			redZones = [{ "from": min + range*0.9, "to": max }],
-			greenZones = [{ "from": 25, "to": 50 }],
-      
-      updateScales = function (){
+  var updateScales = function (){
         scales = d3.scale.linear().domain([min, max]).range([0.01*(2*Math.PI)*(rangeAngle/360),0.99*(2*Math.PI)*(rangeAngle/360)]);
         return scales;
-      }
+      };
       
-      scales = updateScales();
+  var scales = updateScales();
      
      
        
@@ -96,12 +96,10 @@ function Gauge()
         radianHalfAngle = ((360-angle)/360)*Math.PI
     
     
-    
     selection.each(function(d, i) {
       // generate chart here; `d` is the data and `this` is the element
       //d3.select(this).text("hello");
-      
-      
+            
       body = d3.select(this)
                   .append("svg:svg")
                   .attr("class", "gauge")
@@ -238,7 +236,7 @@ function Gauge()
       
       
       
-/**********************************************************************/
+/***THE POINTER********************************************************/
     buildPointerPath = function(value)
       {
         var delta = range / 13;

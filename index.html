@@ -2,28 +2,35 @@
 <html>
 	<head>
 		<meta http-equiv="content-type" content="text/html;charset=utf-8">
-		<title>d3.js gauges</title>		
+		<title>MyGauge</title>		
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
 		<script type="text/javascript" src="mygauge.js"></script>
 
 		<script>
 			
-			var values=[60,30,90];
+			
 			
 			function init()
 			{			
+				
+				var values=[60,30,80];
+				
 				var gauge1 = new Gauge();
-				gauge1.angle(270);
+				gauge1.angle(180);
+
 				var gauge2 = new Gauge();
-				gauge2.angle(180);
-				var gauge3 = new Gauge();
-				gauge3.angle(360);
+				gauge2.angle(270);
+
+				
+				//gauge1 vypada stejne jako gauge2    ?
+				d3.selectAll("#hodne").data([values[2]]).call(gauge1);
+				d3.selectAll("#hodne").data([values[1]]).call(gauge2);
 				
 				
-				d3.selectAll("#hodne").selectAll(".gauge").data([values[0]]).enter()
+				/*.selectAll(".gaugeSpan").data([values[0]]).enter()
 				.append("span")
-				.attr("class","gauge")
-				.call(gauge1);
+				.attr("class","gaugeSpan")
+				.call(gauge1);*/
 				
 			}		
 		</script>
