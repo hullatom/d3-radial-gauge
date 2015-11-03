@@ -52,6 +52,8 @@ function Gauge()
     drawBand = function(body,start, end, color)
     {
       if (0 >= end - start) return;
+      if(start < min || end > max) return;
+      
       body.append("svg:path")
             .style("fill", color)
             .attr("d", d3.svg.arc()
@@ -90,16 +92,21 @@ function Gauge()
     
     
 /***draw outer circle**************************************************/
-    
-    var innerRadius1 = 0.88*radius,
-        innerRadius2 = 0.91*radius,
-        radianHalfAngle = ((360-angle)/360)*Math.PI
-    
-    
+
     selection.each(function(d, i) {
       // generate chart here; `d` is the data and `this` is the element
       //d3.select(this).text("hello");
-            
+      
+      
+      //only one datapoint
+      if(i>0) return;
+      
+      var innerRadius1 = 0.88*radius,
+      innerRadius2 = 0.91*radius,
+      radianHalfAngle = ((360-angle)/360)*Math.PI
+      
+      d3.select(this).selectAll(".gauge").remove();
+      
       body = d3.select(this)
                   .append("svg:svg")
                   .attr("class", "gauge")
@@ -227,9 +234,9 @@ function Gauge()
 
       axLabel.append("g").append("text")
           .attr("x", axLabelradius)
+          .style("font-size",fontSize*0.6+"px")
           .style("fill", "#4a4a4a")
           .style("text-anchor","middle")
-          .style("font-size",fontSize*0.6)
           .attr("transform", function(d) { return "rotate("+(-(-90+rotateRange+(scales(d)*(180/Math.PI))))+" "+axLabelradius +",0)"; })
           .text(function(d) { return d; });
     
@@ -237,20 +244,22 @@ function Gauge()
       
       
 /***THE POINTER********************************************************/
-    buildPointerPath = function(value)
+      buildPointerPath = function(value)
       {
-        var delta = range / 13;
+        var delta = Math.PI/4;
+        value = scales(value);
         
-        var head = convertPolarAxis(scales(value), 0.85*radius);
-        var head1 = convertPolarAxis(scales(value - delta), 0.12*radius);
-        var head2 = convertPolarAxis(scales(value + delta), 0.12*radius);
+        var head = convertPolarAxis(value, 0.85*radius);
+        var head1 = convertPolarAxis(value - delta, 0.05*radius);
+        var head2 = convertPolarAxis(value + delta, 0.05*radius);
         
-        var tailValue = scales(value) - Math.PI;
+        var tailValue = value - Math.PI;
+        
         var tail = convertPolarAxis((tailValue), 0.28*radius);
-        var tail1 = convertPolarAxis(tailValue - scales(delta), 0.12*radius);
-        var tail2 = convertPolarAxis(tailValue + scales(delta), 0.12*radius);
+        var tail1 = convertPolarAxis(tailValue - delta, 0.05*radius);
+        var tail2 = convertPolarAxis(tailValue + delta, 0.05*radius);
         
-        return [head, head1, tail2, tail, tail1, head2, head];
+        return [head, head1,tail2, tail,tail1, head2, head];
         
       }
       
@@ -258,7 +267,12 @@ function Gauge()
 		
       //var midValue = (min + max) / 2;
       
-      var pointerPath = buildPointerPath(d);
+      var value;
+      if(d<min) value = min;
+      else if(d>max) value = max;
+      else value = d;
+      
+      var pointerPath = buildPointerPath(value);
       
       var pointerLine = d3.svg.line()
                     .x(function(d) { return d.x })
@@ -277,6 +291,16 @@ function Gauge()
     var fontSize = Math.round(size / 10);
 		
     if(angle > 249)
+    
+    /*d=Number(d).toPrecision(3);
+    if(d>9) Number(d).toFixed(0);*/
+    
+    //d=String(d);
+    if(String(d).indexOf('.')>1) d=String(d).substring(0,String(d).indexOf('.'));
+    else if(String(d).indexOf('.')>0) d=String(d).substring(0,String(d).indexOf('.')+3);
+    
+    //console.log(String(d).indexOf('.'));
+    
     body.append("svg:text")
 									.attr("class","value")
                   .attr("x", cx)
@@ -331,6 +355,14 @@ function Gauge()
       if(angle==180){
         
         body.append("svg:rect")
+            .attr("y", cy+0.2)
+            .attr("x", 0)
+            .attr("width", size*2)
+            .attr("height", size)
+            .style("fill", "white");
+        
+        
+        body.append("svg:rect")
             .attr("y", cy-0.2)
             .attr("x", 0.03*size/2)
             .attr("width", 2*(radius))
@@ -359,7 +391,7 @@ function Gauge()
             .attr("x1", cx-radius*Math.sin(radianHalfAngle))
             .attr("y2", cy+radius*Math.cos(radianHalfAngle)+(radius-innerRadius2)-0.2)
             .attr("x2", cx-radius*Math.sin(radianHalfAngle));
-        
+                    
         body.append("svg:line")
             .style("stroke-width", "0.5px")
             .style("stroke", "#000")
@@ -386,6 +418,7 @@ function Gauge()
   my.min = function(value) {
     if (!arguments.length) return min;
     min = value;
+    range =  max -  min;
     updateScales();
     return my;
   };
@@ -393,6 +426,7 @@ function Gauge()
   my.max =  function(value) {
     if (!arguments.length) return max;
     max = value;
+    range =  max -  min;
     updateScales();
     return my;
   };
@@ -455,24 +489,18 @@ function Gauge()
   
   my.yellowZones = function(value) {
     if (!arguments.length) return yellowZones;
-    for (var index in value) if (value[index].from < min ) value[index].from = min;
-    for (var index in value) if (value[index].to > max ) value[index].to = max;
     yellowZones = value;
     return my;
   };
   
   my.redZones = function(value) {
     if (!arguments.length) return redZones;
-    for (var index in value) if (value[index].from < min ) value[index].from = min;
-    for (var index in value) if (value[index].to > max ) value[index].to = max;
     redZones = value;
     return my;
   };
   
   my.greenZones = function(value) {
     if (!arguments.length) return greenZones;
-    for (var index in value) if (value[index].from < min ) value[index].from = min;
-    for (var index in value) if (value[index].to > max ) value[index].to = max;
     greenZones = value;
     return my;
   };  
