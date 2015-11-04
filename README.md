@@ -13,3 +13,5 @@ It inspired by Google's radial gauge and tomerd's work with D3.js
 ## State of the project
 
 At this stage there are few versions of the Gauge with optimized look, but it can be still improved a lot. For updating the gauge, there is a lot of space for improvements as well. Now it just removes everything and draws everything again. Also there is no implementation of transitions yet. Transions are not my priority so it is up to you. Get some inspiration at Tomerd's GIST, but my version is very differnt now. 
+
+![alt tag](preview.png)
