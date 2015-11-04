@@ -3,8 +3,8 @@
 	<head>
 		<meta http-equiv="content-type" content="text/html;charset=utf-8">
 		<title>MyGauge</title>		
-		<script type="text/javascript" src="d3.3.5.6.min.js" charset="utf-8"></script>
-		<script type="text/javascript" src="mygauge.js"></script>
+		<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+		<script type="text/javascript" src="mygauge.js" charset="utf-8"></script>
 
 		<script>
 			
@@ -18,21 +18,20 @@
 			gauge4.angle(360).min(2000).max(10000);
 			var gauge3 = new Gauge();
 			gauge3.angle(270).min(0).max(1000).greenZones([{"from":0,"to":0}]).yellowZones([{"from":0,"to":0}]).redZones([{"from":0,"to":0}]);
-			//console.log(gauge3.min());
 			
 			var gauges =[gauge1,gauge2,gauge3,gauge4];
     
 			function init()
 			{			
-				d3.select("#hodne").append("span").attr("id","Budik1").data([values[2]]).call(gauge1);
-				d3.select("#hodne").append("span").attr("id","Budik2").data([values[1]]).call(gauge2);
-				d3.select("#hodne").append("span").attr("id","Budik3").data([values[0]]).call(gauge3);
-				d3.select("#hodne").append("span").attr("id","Budik4").data([values[3]]).call(gauge4);
+				d3.select("#page1").append("span").attr("id","Budik1").data([values[0]]).call(gauge1);
+				d3.select("#page1").append("span").attr("id","Budik2").data([values[1]]).call(gauge2);
+				d3.select("#page1").append("span").attr("id","Budik3").data([values[2]]).call(gauge3);
+				d3.select("#page1").append("span").attr("id","Budik4").data([values[3]]).call(gauge4);
 				
 			}	
 			
 			
-			var frekvence = 10;
+			var freq = 10;
 			var step = 0;
 			
 			function update(){
@@ -42,17 +41,17 @@
 				d3.select("#Budik3").data([Math.abs(Math.cos(step*0.05))* (gauges[2].max() - gauges[2].min()) + gauges[2].min()]).call(gauge3);	
 				d3.select("#Budik4").data([Math.abs(Math.sin(step*0.05))* (gauges[3].max() - gauges[3].min()) + gauges[3].min()]).call(gauge4);			
 
-				step+=5/frekvence;
+				step+=5/freq;
 			}	
 			
-			setInterval(update,1000/frekvence);
+			setInterval(update,1000/freq);
 			
 		</script>
 	</head>
 	
 	<body onload="init()">
 		
-		<div id="hodne"></div>
+		<div id="page1"></div>
 		
 	</body>
 	

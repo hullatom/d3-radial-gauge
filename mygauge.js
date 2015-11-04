@@ -264,8 +264,6 @@ function Gauge()
       }
       
       var pointerContainer = body.append("svg:g").attr("class", "pointerContainer");
-		
-      //var midValue = (min + max) / 2;
       
       var value;
       if(d<min) value = min;
@@ -290,16 +288,11 @@ function Gauge()
 
     var fontSize = Math.round(size / 10);
 		
-    if(angle > 249)
+    if(angle > 249){
     
-    /*d=Number(d).toPrecision(3);
-    if(d>9) Number(d).toFixed(0);*/
-    
-    //d=String(d);
     if(String(d).indexOf('.')>1) d=String(d).substring(0,String(d).indexOf('.'));
     else if(String(d).indexOf('.')>0) d=String(d).substring(0,String(d).indexOf('.')+3);
-    
-    //console.log(String(d).indexOf('.'));
+
     
     body.append("svg:text")
 									.attr("class","value")
@@ -311,7 +304,7 @@ function Gauge()
 									.style("fill", "#000")
 									.style("stroke-width", "0px")
                   .text(d);
-
+    }
 /*****The Center*******************************************************/  
     
       body.append("svg:path")
